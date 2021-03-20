@@ -1,13 +1,21 @@
 package taskA;
 
 import loadData.DataLoader;
+import parse.ParserDataWeather;
 
 public class TaskA {
     public static void main(String[] args) {
-        DataLoader loader = new DataLoader();
+        loadData("http://api.openweathermap.org/data/2.5/forecast/daily?q=Minsk&appid=995228a05aeffd24aed504ac7cfa3b21&units=metric&lang=ru");
+    }
 
-        StringBuilder content = loader.loadData("http://api.openweathermap.org/data/2.5/forecast/daily?q=Minsk&appid=995228a05aeffd24aed504ac7cfa3b21&mode=xml&units=metric");
+    private static String loadData(String url) {
+        DataLoader dataLoader = new DataLoader();
 
-        System.out.println(content);
+        String json = dataLoader.loadData(url);
+
+        ParserDataWeather parserDataWeather = new ParserDataWeather();
+        parserDataWeather.parseWeather(json, 0);
+
+        return json;
     }
 }
