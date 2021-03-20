@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class ParserDataExchange {
     private static final ArrayList<ExchangeDTO> exchanges = new ArrayList<>();
 
-    public void parseXMLExchange(String url) {
+    public void parseXMLExchange(String url, String charCode) {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         try {
@@ -25,8 +25,7 @@ public class ParserDataExchange {
             parser.parse(url, handler);
 
             for (ExchangeDTO exchange : exchanges) {
-                //System.out.printf("Цифровой код: %s, символьный код: %s, номинал: %s, название: %s, значение: %s%n", exchange.getNumCode(), exchange.getCharCode(), exchange.getNominal(), exchange.getName(), exchange.getValue());
-                if(exchange.getCharCode().equals("JPY")) {
+                if(exchange.getCharCode().equals(charCode)) {
                     System.out.printf("%s Российских рублей = %s %s", exchange.getNominal(), exchange.getValue(), exchange.getName());
                 }
             }

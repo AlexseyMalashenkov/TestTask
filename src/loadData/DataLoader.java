@@ -1,9 +1,9 @@
 package loadData;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 public class DataLoader {
     public StringBuilder loadData(String site) {
@@ -15,7 +15,7 @@ public class DataLoader {
             URLConnection con = url.openConnection();
             InputStream is = con.getInputStream();
 
-            InputStreamReader reader = new InputStreamReader(is, "windows-1251");
+            InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(reader);
 
             String line;
