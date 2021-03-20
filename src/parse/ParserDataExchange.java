@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class ParserDataExchange {
     private static final ArrayList<ExchangeDTO> exchanges = new ArrayList<>();
 
-    public void parseXMLExchange(String url, String charCode) {
+    public ArrayList<ExchangeDTO> parseXMLExchange(String url) {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         try {
@@ -23,23 +23,22 @@ public class ParserDataExchange {
             AdvancedXMLHandler handler = new AdvancedXMLHandler();
 
             parser.parse(url, handler);
-
-            for (ExchangeDTO exchange : exchanges) {
-                if(exchange.getCharCode().equals(charCode)) {
-                    System.out.printf("%s Российских рублей = %s %s", exchange.getNominal(), exchange.getValue(), exchange.getName());
-                }
-            }
         } catch (ParserConfigurationException | SAXException | IOException exception) {
             System.out.println(exception.getMessage());
         }
+
+        return exchanges;
     }
 
     private static class AdvancedXMLHandler extends DefaultHandler {
-        private String numCode, charCode, nominal, name, value, lastElement;
+        private String numCode, charCode, nominal, name, value, date, lastElement;
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
             lastElement = qName;
+            if (lastElement.equals("ValCurs")) {
+                date = attributes.getValue("Date");
+            }
         }
 
         @Override
@@ -69,8 +68,8 @@ public class ParserDataExchange {
 
         @Override
         public void endElement(String uri, String localName, String qName) {
-            if ( (numCode != null && !numCode.isEmpty()) && (charCode != null && !charCode.isEmpty()) && (nominal != null && !nominal.isEmpty()) && (name != null && !name.isEmpty()) && (value != null && !value.isEmpty()) ) {
-                exchanges.add(new ExchangeDTO(numCode, charCode, nominal, name, value));
+            if ( (numCode != null && !numCode.isEmpty()) && (charCode != null && !charCode.isEmpty()) && (nominal != null && !nominal.isEmpty()) && (name != null && !name.isEmpty()) && (value != null && !value.isEmpty()) && (date != null && !date.isEmpty()) ) {
+                exchanges.add(new ExchangeDTO(numCode, charCode, nominal, name, value, date));
                 numCode = null;
                 charCode = null;
                 nominal = null;
