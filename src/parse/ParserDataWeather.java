@@ -1,51 +1,110 @@
 package parse;
 
-import dto.ExchangeDTO;
 import dto.WeatherDTO;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import java.time.Instant;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class ParserDataWeather {
-    public void parseWeather(String jsonString, int dayIndex) {
-        ArrayList<WeatherDTO> weatherDTO = new ArrayList<>();
+    private static final ArrayList<WeatherDTO> weathers = new ArrayList<>();
+    private static boolean key = false;
+    private static int count = 0;
+    private static String night = null;
+    private static String day = null;
+    private static String pressure = null;
+    private static String date = null;
+    private static String altitude = null;
+    private static String latitude = null;
+    private static String longitude = null;
 
-
-        JSONObject jsonObj = new JSONObject(jsonString);
-
-        JSONObject s = jsonObj.getJSONObject("city");
-
-        String city = jsonObj.getJSONObject("city").getString("name");
-        String country = jsonObj.getJSONObject("city").getString("country");
-        Integer id = jsonObj.getJSONObject("city").getInt("id");
-
-        Double lon = jsonObj.getJSONObject("city").getJSONObject("coord").getDouble("lon");
-        Double lat = jsonObj.getJSONObject("city").getJSONObject("coord").getDouble("lat");
-
-        JSONArray weatherList = jsonObj.getJSONArray("list");
-        Iterator iterator = weatherList.iterator();
-
-        int i = 0;
-        while (iterator.hasNext() && i < 5) {
-            JSONObject item = weatherList.getJSONObject(i);
-
-            JSONObject temp = item.getJSONObject("temp");
-            Double day = temp.getDouble("day");
-            Double night = temp.getDouble("night");
-            Integer pressure = item.getInt("pressure");
-
-            Integer date = item.getInt("dt");
-            Instant instant = Instant.ofEpochSecond(date);
-
-            System.out.println("day - " + day + " night - " + night + " pressure - " + pressure + " date - " + instant + " city - " + city + " country - " + country + " lon - " + lon + " lat - " + lat + " id - " + id);
-
-            i++;
-            iterator.next();
+    public ArrayList<WeatherDTO> parseXMLWeather(String url) {
+        InputStream path = null;
+        try {
+            path = new URL(url).openStream();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
+        DocumentBuilder builder = null;
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        Document document = null;
+        try {
+            document = builder.parse(path);
+        } catch (SAXException | IOException e) {
+            e.printStackTrace();
+        }
+
+        findLocation(document.getDocumentElement());
+
+
+        findInfo(document.getDocumentElement());
+
+        return weathers;
+    }
+
+    private static void findLocation(Node node) {
+        NodeList list = node.getChildNodes();
+
+        if (node.getNodeName().equals("location") && node.getNodeType() == Node.ELEMENT_NODE && !key) {
+            Element locationElement = (Element) node;
+
+            Element tempElement = (Element) locationElement.getElementsByTagName("location").item(0);
+            altitude = tempElement.getAttribute("altitude");
+            latitude = tempElement.getAttribute("latitude");
+            longitude = tempElement.getAttribute("longitude");
+            key = true;
+        }
+
+        for (int i = 0; i < list.getLength(); i++) {
+            Node currentNode = list.item(i);
+            findLocation(currentNode);
+        }
+    }
+
+    private static void findInfo(Node node) {
+        NodeList list = node.getChildNodes();
+
+        if (node.getNodeName().equals("time") && node.getNodeType() == Node.ELEMENT_NODE) {
+            Element timeElement = (Element) node;
+            date = timeElement.getAttribute("day");
+
+            Element tempElement = (Element) timeElement.getElementsByTagName("temperature").item(0);
+            night = tempElement.getAttribute("night");
+            day = tempElement.getAttribute("morn");
+
+            Element tempElement2 = (Element) timeElement.getElementsByTagName("pressure").item(0);
+            pressure = tempElement2.getAttribute("value");
+
+            if ( (altitude != null && !altitude.isEmpty()) && (latitude != null && !latitude.isEmpty()) && (longitude != null && !longitude.isEmpty()) && count < 5) {
+                weathers.add(new WeatherDTO(latitude, longitude, altitude, Double.parseDouble(day), Double.parseDouble(night), Integer.parseInt(pressure), date));
+                date = null;
+                day = null;
+                night = null;
+                pressure = null;
+                count++;
+            }
+        }
+
+        for (int i = 0; i < list.getLength(); i++) {
+            Node currentNode = list.item(i);
+            findInfo(currentNode);
+        }
     }
 }

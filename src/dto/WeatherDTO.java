@@ -1,30 +1,22 @@
 package dto;
 
 public class WeatherDTO {
-    private String name;
-    private String country;
     private String locationLatitude;
     private String locationLongitude;
-    private String temperatureDay;
-    private String temperatureNight;
-    private String pressureValue;
+    private String locationAltitude;
+    private double temperatureDay;
+    private double temperatureNight;
+    private int pressureValue;
+    private String date;
 
-    public WeatherDTO(String name, String country, String locationLatitude, String locationLongitude, String temperatureDay, String temperatureNight, String pressureValue) {
-        this.name = name;
-        this.country = country;
+    public WeatherDTO(String locationLatitude, String locationLongitude, String locationAltitude, double temperatureDay, double temperatureNight, int pressureValue, String date) {
         this.locationLatitude = locationLatitude;
         this.locationLongitude = locationLongitude;
+        this.locationAltitude = locationAltitude;
         this.temperatureDay = temperatureDay;
         this.temperatureNight = temperatureNight;
         this.pressureValue = pressureValue;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getCountry() {
-        return country;
+        this.date = date;
     }
 
     public String getLocationLatitude() {
@@ -35,15 +27,23 @@ public class WeatherDTO {
         return locationLongitude;
     }
 
-    public String getTemperatureDay() {
+    public String getLocationAltitude() {
+        return locationAltitude;
+    }
+
+    public double getTemperatureDay() {
         return temperatureDay;
     }
 
-    public String getTemperatureNight() {
+    public double getTemperatureNight() {
         return temperatureNight;
     }
 
-    public String getPressureValue() {
+    public int getPressureValue() {
         return pressureValue;
+    }
+
+    public String getDate() {
+        return date;
     }
 }
